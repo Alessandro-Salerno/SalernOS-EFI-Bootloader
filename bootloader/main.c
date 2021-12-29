@@ -20,10 +20,12 @@ limitations under the License.
 #include "bootfile.h"
 #include "bootmem.h"
 #include "bootgraphics.h"
+#include "bootfont.h"
 
 
 typedef struct BootInfo {
 	Framebuffer* _Framebuffer;
+	BitmapFont*  _Font;
 } BootInfo;
 
 
@@ -31,25 +33,25 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable) {
 	BootInfo _bootinfo;
 	
 	InitializeLib(ImageHandle, SystemTable);
-	Print(L"Entering SalernOS boot loader...\n\r");
+	Print(L"Entering SalernOS EFI Bootloader (SEB)...\n\r\n\r");
 	
-	Print(L"About to load Graphics Output Protocol...\n\r");
+	Print(L"INFO: About to load Graphics Output Protocol...\n\r");
 	if ((_bootinfo._Framebuffer = bootloader_initialize_graphics()) == NULL)
-		goto BOOT_END;
+		goto BOOT_FAILED;
 	
-	Print(L"About to load system kernel (kernel.elf)\n\r");
+	Print(L"INFO: About to load system kernel (openbit/bin/kernel.elf)\n\r");
 
 	// Tries to get a pointer to the kernel ELF file
 	// If it fails, it jumps to the end of the boot loader
-	EFI_FILE* _kernel = bootloader_loadfile(NULL, L"kernel.elf", ImageHandle, SystemTable);
+	EFI_FILE* _kernel = bootloader_loadfile(bootloader_loadfile(bootloader_loadfile(NULL, L"openbit", ImageHandle, SystemTable), L"bin", ImageHandle, SystemTable), L"kernel.elf", ImageHandle, SystemTable);
 	if (_kernel == NULL) {
-		Print(L"Unable to locate kernel.elf\n\r");
-		goto BOOT_END;
+		Print(L"ERROR: Unable to locate kernel.elf\n\r");
+		goto BOOT_FAILED;
 	}
 
 	// If the kernel binary is located
 	// It goes on to read its ELF header
-	Print(L"Reading kernel ELF header...\n\r");
+	Print(L"INFO: Reading kernel ELF header...\n\r");
 	Elf64_Ehdr _elf_header;
 		UINTN _file_info_size;
 		EFI_FILE_INFO* _file_info;
@@ -74,12 +76,12 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable) {
 	)
 	{
 		// If it isn't, it throws an error and jumps to the end
-		Print(L"Invalid kernel header\n\r");
-		goto BOOT_END;
+		Print(L"ERROR: Invalid kernel header\n\r");
+		goto BOOT_FAILED;
 	}
 
 	// If it is, it continues
-	Print(L"Kernel header verified!\n\r");
+	Print(L"SUCCESS: Kernel header verified!\n\r");
 
 	Elf64_Phdr* _elf_program_headers;
 		_kernel->SetPosition(_kernel, _elf_header.e_phoff);
@@ -105,12 +107,18 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable) {
 		}
 	}
 
-	Print(L"Kernel loaded!\n\r");
-	Print(L"Jumping to kernel entry...\n\r");
+	Print(L"SUCCESS: Kernel loaded!\n\r");
 
-	void (*_kernel_entry)(BootInfo*) = ((__attribute__((sysv_abi)) void (*)(BootInfo*))(_elf_header.e_entry));
-	_kernel_entry(&_bootinfo);
+	if ((_bootinfo._Font = bootloader_loadfont(bootloader_loadfile(bootloader_loadfile(NULL, L"openbit", ImageHandle, SystemTable), L"assets", ImageHandle, SystemTable), L"kernelfont.psf", ImageHandle, SystemTable)) == NULL)
+		goto BOOT_FAILED;
 
-	BOOT_END:
+	Print(L"INFO: Jumping to kernel entry...\n\r");
+	void (*_kernel_entry)(BootInfo) = ((__attribute__((sysv_abi)) void (*)(BootInfo))(_elf_header.e_entry));
+	_kernel_entry(_bootinfo);
+
+	return EFI_SUCCESS;
+
+	BOOT_FAILED:
+	Print(L"FATAL ERROR: Boot failed. Exiting SalernOS EFI Bootloader...\n\r");
 	return EFI_SUCCESS;
 }

@@ -40,11 +40,11 @@ limitations under the License.
         EFI_STATUS _status = uefi_call_wrapper(BS->LocateProtocol, 3, &_gop_guid, NULL, (void**)(&_graphics_output_protocol));
 
         if (EFI_ERROR(_status)) {
-            Print(L"Unable to locate Graphics Output Protocol.\n\r");
+            Print(L"ERROR: Unable to locate Graphics Output Protocol.\n\r");
             return NULL;
         }
 
-        Print(L"Graphics Output Protocol located!\n\r");
+        Print(L"SUCCESS: Graphics Output Protocol located!\n\r");
 
         framebuffer._BaseAddress       = (void*)(_graphics_output_protocol->Mode->FrameBufferBase);
         framebuffer._BufferSize        = _graphics_output_protocol->Mode->FrameBufferSize;
@@ -53,7 +53,7 @@ limitations under the License.
         framebuffer._PixelsPerScanLine = _graphics_output_protocol->Mode->Info->PixelsPerScanLine;
         framebuffer._BytesPerPixel     = 4;
 
-        Print(L"Framebuffer set up!\n\r");
+        Print(L"SUCCESS: Framebuffer set up!\n\r");
         Print(L"Base Address: 0x%x\n\rSize: %d bytes\n\rWidth: %d (Real: %d) pixels\n\rHeight: %d pixels\n\rBPP: %d\n\r",
                 framebuffer._BaseAddress, framebuffer._BufferSize, framebuffer._Width,
                 framebuffer._PixelsPerScanLine, framebuffer._Height, framebuffer._BytesPerPixel);
