@@ -1,6 +1,6 @@
 /***********************************************************************
                             SalernOS EFI Bootloader
-                        Copyright 2021 Alessandro Salerno
+                  Copyright 2021 - 2022 Alessandro Salerno
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ typedef struct BootInfo {
 
 EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable) {
 	BootInfo _bootinfo;
-	
+
 	InitializeLib(ImageHandle, SystemTable);
 	Print(L"Entering SalernOS EFI Bootloader (SEB)...\n\r\n\r");
 	
@@ -59,7 +59,6 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable) {
 		// Gets the size of the header and allocatres enough memory to hold it
 		_kernel->GetInfo(_kernel, &gEfiFileInfoGuid, &_file_info_size, NULL);
 		SystemTable->BootServices->AllocatePool(EfiLoaderData, _file_info_size, (void**)(&_file_info));
-		bootloader_memset((void*)(_file_info), _file_info_size, 0);
 
 		// Gets the header, reads it and saves it into memory
 		_kernel->GetInfo(_kernel, &gEfiFileInfoGuid, &_file_info_size, (void**)(&_file_info));
@@ -87,11 +86,10 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable) {
 		_kernel->SetPosition(_kernel, _elf_header.e_phoff);
 		UINTN _elf_size = _elf_header.e_phnum * _elf_header.e_phentsize;
 		SystemTable->BootServices->AllocatePool(EfiLoaderData, _elf_size, (void**)(&_elf_program_headers));
-		bootloader_memset((void*)(_elf_program_headers), _elf_size, 0);
 		_kernel->Read(_kernel, &_elf_size, _elf_program_headers);
 	
 	for (Elf64_Phdr* _elf_program_header = _elf_program_headers;
-		 (char*)(_elf_program_header) < (char*)(_elf_program_headers) + _elf_header.e_phnum * _elf_header.e_phentsize;
+		 (char*)(_elf_program_header) < (char*)(_elf_program_headers) + _elf_size;
 		 _elf_program_header = (Elf64_Phdr*)((char*)(_elf_program_header) + _elf_header.e_phentsize)
 	)
 	{
@@ -99,7 +97,6 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable) {
 			int _pages      = (_elf_program_header->p_memsz + 0x1000 - 1) / 0x1000;
 			Elf64_Addr _seg = _elf_program_header->p_paddr;
 			SystemTable->BootServices->AllocatePages(AllocateAddress, EfiLoaderData, _pages, &_seg);
-			bootloader_memset((void*)(_seg), _pages * 4096, 0);
 
 			_kernel->SetPosition(_kernel, _elf_program_header->p_offset);
 			UINTN _size = _elf_program_header->p_filesz;

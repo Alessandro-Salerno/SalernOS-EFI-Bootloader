@@ -1,6 +1,6 @@
 /***********************************************************************
                             SalernOS EFI Bootloader
-                        Copyright 2021 Alessandro Salerno
+                  Copyright 2021 - 2022 Alessandro Salerno
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,15 +20,15 @@ limitations under the License.
 #define SALERNOS_GRAPHICS_HEADER
 
     #include "bootimports.h"
-    #include <stdint.h>
+    #include "bootmem.h"
 
     typedef struct Framebuffer {
         void*    _BaseAddress;
         size_t   _BufferSize;
-        uint32_t _Width;
-        uint32_t _Height;
-        uint32_t _PixelsPerScanLine;
-        uint8_t  _BytesPerPixel;
+        uint32 _Width;
+        uint32 _Height;
+        uint32 _PixelsPerScanLine;
+        uint8  _BytesPerPixel;
     } Framebuffer;
 
     Framebuffer framebuffer;

@@ -1,6 +1,6 @@
 /***********************************************************************
                             SalernOS EFI Bootloader
-                        Copyright 2021 Alessandro Salerno
+                  Copyright 2021 - 2022 Alessandro Salerno
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -42,8 +42,8 @@ limitations under the License.
         return 0;
     }
 
-    void bootloader_memset(void* __buff, uint64_t __buffsize, uint8_t __val) {
-        for (uint64_t _i = 0; _i < __buffsize; _i++)
+    void bootloader_memset(void* __buff, uint64 __buffsize, uint8 __val) {
+        for (uint64 _i = 0; _i < __buffsize; _i++)
             *(unsigned char*)(__buff + _i) = __val;
     }
 

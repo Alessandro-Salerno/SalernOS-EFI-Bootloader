@@ -1,6 +1,6 @@
 /***********************************************************************
                             SalernOS EFI Bootloader
-                        Copyright 2021 Alessandro Salerno
+                  Copyright 2021 - 2022 Alessandro Salerno
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,14 +28,13 @@ limitations under the License.
 
 
     typedef struct BitmapFontHeader {
-        uint8_t _Magic[2];
-        uint8_t _Mode;
-        uint8_t _CharSize;
+        uint8 _Magic[2];
+        uint8 _Mode;
+        uint8 _CharSize;
     } BitmapFontHeader;
 
     typedef struct BitmapFont {
         BitmapFontHeader* _Header;
-        size_t            _BufferSize;
         void*             _Buffer;
     } BitmapFont;
 
@@ -52,7 +51,6 @@ limitations under the License.
         BitmapFontHeader* _font_header;
         UINTN _font_header_size = sizeof(BitmapFontHeader);
         __systable->BootServices->AllocatePool(EfiLoaderData, sizeof(BitmapFontHeader), (void**)(&_font_header));
-        bootloader_memset((void*)(_font_header), _font_header_size, 0);
         _font->Read(_font, &_font_header_size, _font_header);
 
         if (_font_header->_Magic[0] != BITMAP_FONT_MAGIC0 || _font_header->_Magic[1] != BITMAP_FONT_MAGIC1) {
@@ -64,19 +62,16 @@ limitations under the License.
         void* _buffer;
         _font->SetPosition(_font, _font_header_size);
         __systable->BootServices->AllocatePool(EfiLoaderData, _buffer_size, (void**)(&_buffer));
-        bootloader_memset((void*)(_buffer), _buffer_size, 0);
         _font->Read(_font, &_buffer_size, _buffer);
 
         BitmapFont* _final_font;
         __systable->BootServices->AllocatePool(EfiLoaderData, sizeof(BitmapFont), (void**)(&_final_font));
-        bootloader_memset((void*)(_final_font), sizeof(BitmapFont), 0);
         _final_font->_Header     = _font_header;
-        _final_font->_BufferSize = _buffer_size;
         _final_font->_Buffer     = _buffer;
 
         Print(L"SUCCESS: PSF1 font loaded!\n\r");
-        Print(L"Font mode: %d\n\rFont char size: %d bytes\n\rFont buffer size: %d bytes\n\rFont base address: 0x%x\n\r",
-                _final_font->_Header->_Mode, _final_font->_Header->_CharSize, _final_font->_BufferSize, (uint64_t)(_final_font->_Buffer));
+        Print(L"Font mode: %d\n\rFont char height: %d pixels\n\rFont base address: 0x%x\n\r",
+                _final_font->_Header->_Mode, _final_font->_Header->_CharSize, (uint64)(_final_font->_Buffer));
 
         return _final_font;
     }
