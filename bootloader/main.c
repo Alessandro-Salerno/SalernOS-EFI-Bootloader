@@ -22,100 +22,90 @@ limitations under the License.
 #include "bootgraphics.h"
 #include "bootfont.h"
 
+#define SEB_FAILURE 1
+
+#define COMPILATION_DATE_DAY 4
+#define COMPILAIION_DATE_MONTH (uint16)('A' << 8)
+
+#define SEB_MAJOR_VERSION 22
+#define SEB_MINOR_VERSION (uint16)(COMPILAIION_DATE_MONTH | COMPILATION_DATE_DAY)
+
+
+typedef struct MemoryInfo {
+	EFI_MEMORY_DESCRIPTOR* _MemoryMap;
+	UINTN                  _MemoryMapSize;
+	UINTN                  _DescriptorSize;
+} MemoryInfo;
 
 typedef struct BootInfo {
 	Framebuffer* _Framebuffer;
 	BitmapFont*  _Font;
+	MemoryInfo   _Memory;
+
+    uint8        _SEBMajorVersion;
+    uint16       _SEBMinorVersion;
 } BootInfo;
 
 
-EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* SystemTable) {
+EFI_STATUS efi_main(EFI_HANDLE __imagehandle, EFI_SYSTEM_TABLE* __systable) {
 	BootInfo _bootinfo;
+	_bootinfo._SEBMajorVersion = SEB_MAJOR_VERSION;
+	_bootinfo._SEBMinorVersion = SEB_MINOR_VERSION;
 
-	InitializeLib(ImageHandle, SystemTable);
+	InitializeLib(__imagehandle, __systable);
 	Print(L"Entering SalernOS EFI Bootloader (SEB)...\n\r\n\r");
 	
+	// Locate and use Graphics Output Protocol (UEFI GOP)
 	Print(L"INFO: About to load Graphics Output Protocol...\n\r");
 	if ((_bootinfo._Framebuffer = bootloader_initialize_graphics()) == NULL)
 		goto BOOT_FAILED;
 	
 	Print(L"INFO: About to load system kernel (openbit/bin/kernel.elf)\n\r");
 
-	// Tries to get a pointer to the kernel ELF file
-	// If it fails, it jumps to the end of the boot loader
-	EFI_FILE* _kernel = bootloader_loadfile(bootloader_loadfile(bootloader_loadfile(NULL, L"openbit", ImageHandle, SystemTable), L"bin", ImageHandle, SystemTable), L"kernel.elf", ImageHandle, SystemTable);
-	if (_kernel == NULL) {
-		Print(L"ERROR: Unable to locate kernel.elf\n\r");
+	// Open openbit/bin directory
+	EFI_FILE* _openbit_bin = bootloader_loadfile(bootloader_loadfile(NULL, L"openbit", __imagehandle, __systable), L"bin", __imagehandle, __systable);
+	if (_openbit_bin == NULL) {
+		Print(L"ERROR: System is not OpenBit Compatible!\n\r");
 		goto BOOT_FAILED;
 	}
 
-	// If the kernel binary is located
-	// It goes on to read its ELF header
-	Print(L"INFO: Reading kernel ELF header...\n\r");
-	Elf64_Ehdr _elf_header;
-		UINTN _file_info_size;
-		EFI_FILE_INFO* _file_info;
+	EFI_FILE* _kernel_file = bootloader_loadfile(_openbit_bin, L"kernel.elf", __imagehandle, __systable);
+	ElfFile _kernel = bootloader_loadelf(_kernel_file, __systable);
 
-		// Gets the size of the header and allocatres enough memory to hold it
-		_kernel->GetInfo(_kernel, &gEfiFileInfoGuid, &_file_info_size, NULL);
-		SystemTable->BootServices->AllocatePool(EfiLoaderData, _file_info_size, (void**)(&_file_info));
-
-		// Gets the header, reads it and saves it into memory
-		_kernel->GetInfo(_kernel, &gEfiFileInfoGuid, &_file_info_size, (void**)(&_file_info));
-		UINTN _elf_header_size = sizeof(_elf_header);
-		_kernel->Read(_kernel, &_elf_header_size, &_elf_header);
-
-	// Checks if the ELF file is a valid executable
-	if (bootloader_memcmp(&_elf_header.e_ident[EI_MAG0], ELFMAG, SELFMAG) != 0            ||
-		_elf_header.e_ident[EI_CLASS]                                     != ELFCLASS64   ||
-		_elf_header.e_ident[EI_DATA]                                      != ELFDATA2LSB  ||
-		_elf_header.e_type                                                != ET_EXEC      ||
-		_elf_header.e_machine                                             != EM_X86_64    ||
-		_elf_header.e_version                                             != EV_CURRENT
-	)
-	{
-		// If it isn't, it throws an error and jumps to the end
-		Print(L"ERROR: Invalid kernel header\n\r");
+	if (_kernel._Valid == 0)
 		goto BOOT_FAILED;
-	}
-
-	// If it is, it continues
-	Print(L"SUCCESS: Kernel header verified!\n\r");
-
-	Elf64_Phdr* _elf_program_headers;
-		_kernel->SetPosition(_kernel, _elf_header.e_phoff);
-		UINTN _elf_size = _elf_header.e_phnum * _elf_header.e_phentsize;
-		SystemTable->BootServices->AllocatePool(EfiLoaderData, _elf_size, (void**)(&_elf_program_headers));
-		_kernel->Read(_kernel, &_elf_size, _elf_program_headers);
-	
-	for (Elf64_Phdr* _elf_program_header = _elf_program_headers;
-		 (char*)(_elf_program_header) < (char*)(_elf_program_headers) + _elf_size;
-		 _elf_program_header = (Elf64_Phdr*)((char*)(_elf_program_header) + _elf_header.e_phentsize)
-	)
-	{
-		if (_elf_program_header->p_type == PT_LOAD) {
-			int _pages      = (_elf_program_header->p_memsz + 0x1000 - 1) / 0x1000;
-			Elf64_Addr _seg = _elf_program_header->p_paddr;
-			SystemTable->BootServices->AllocatePages(AllocateAddress, EfiLoaderData, _pages, &_seg);
-
-			_kernel->SetPosition(_kernel, _elf_program_header->p_offset);
-			UINTN _size = _elf_program_header->p_filesz;
-			_kernel->Read(_kernel, &_size, (void*)(_seg));
-		}
-	}
 
 	Print(L"SUCCESS: Kernel loaded!\n\r");
 
-	if ((_bootinfo._Font = bootloader_loadfont(bootloader_loadfile(bootloader_loadfile(NULL, L"openbit", ImageHandle, SystemTable), L"assets", ImageHandle, SystemTable), L"kernelfont.psf", ImageHandle, SystemTable)) == NULL)
+	if ((_bootinfo._Font = bootloader_loadfont(bootloader_loadfile(bootloader_loadfile(NULL, L"openbit", __imagehandle, __systable), L"assets", __imagehandle, __systable), L"kernelfont.psf", __imagehandle, __systable)) == NULL)
 		goto BOOT_FAILED;
 
-	Print(L"INFO: Jumping to kernel entry...\n\r");
-	void (*_kernel_entry)(BootInfo) = ((__attribute__((sysv_abi)) void (*)(BootInfo))(_elf_header.e_entry));
-	_kernel_entry(_bootinfo);
+	// Create Memory Map
+	EFI_MEMORY_DESCRIPTOR* _mem_map = NULL;
+		UINTN _mem_map_size, _mem_map_key;
+		UINTN _mem_descriptor_size;
+		UINT32 _mem_descriptor_version;
+		__systable->BootServices->GetMemoryMap(&_mem_map_size, _mem_map, &_mem_map_key, &_mem_descriptor_size, &_mem_descriptor_version);
+		__systable->BootServices->AllocatePool(EfiLoaderData, _mem_map_size, (void**)(&_mem_map));
+		__systable->BootServices->GetMemoryMap(&_mem_map_size, _mem_map, &_mem_map_key, &_mem_descriptor_size, &_mem_descriptor_version);
 
+		// Send Memory Map to the kernel
+		_bootinfo._Memory = (MemoryInfo) {
+			._MemoryMap      = _mem_map,
+			._MemoryMapSize  = _mem_map_size,
+			._DescriptorSize = _mem_descriptor_size
+		};
+
+	Print(L"INFO: Jumping to kernel entry...\n\r");
+	void (*_kernel_entry)(BootInfo) = ((__attribute__((sysv_abi)) void (*)(BootInfo))(_kernel._Header.e_entry));
+	
+	// Exit EFI Boot Services and jump to the kernel
+	__systable->BootServices->ExitBootServices(__imagehandle, _mem_map_key);
+	_kernel_entry(_bootinfo);
+	
 	return EFI_SUCCESS;
 
 	BOOT_FAILED:
 	Print(L"FATAL ERROR: Boot failed. Exiting SalernOS EFI Bootloader...\n\r");
-	return EFI_SUCCESS;
+	return SEB_FAILURE;
 }

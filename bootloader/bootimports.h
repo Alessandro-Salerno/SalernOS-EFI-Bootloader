@@ -21,7 +21,12 @@ limitations under the License.
 
     #include <efi.h>
     #include <efilib.h>
-    #include <elf.h>
     #include "boottypes.h"
+    
+    #ifdef _WIN32
+        #include "../lib/elf.h"
+    #else
+        #include <elf.h>
+    #endif
 
 #endif
