@@ -1,9 +1,0 @@
-{
-    "files.associations": {
-        "bootmem.h": "c",
-        "bootfile.h": "c",
-        "bootimports.h": "c",
-        "elf.h": "c",
-        "stdint.h": "c"
-    }
-}
