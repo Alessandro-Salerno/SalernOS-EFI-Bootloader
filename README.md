@@ -10,7 +10,7 @@ The SalernOS EFI Bootloader is a free and open source GNU-EFI bootloader built o
 * ```variablename``` and ```variable_name``` are global variables
 * ```__variablename``` and ```__variable_name``` are function arguments
 
-## Compilation
+## Compiling SEB
 Compiling SEB is quite eaasy, just follow these steps
 * Make sure you're running a GNU/Linux system. If you're running Windows 10/11 or macOS, use WSL or Docker
 * Install the build-essentials package via your package manager (apt-get/pacman etc)
@@ -38,7 +38,7 @@ Currently the SalernOS OpenBit Bootloader Specification requires the following d
 * openbit/assets
 
 The `EFI/BOOT`directory must contain a `bootx64.efi` file. This file is the SEB binary, you can get it by renaming the `main.efi` file.
-The `openbit/assets` directory must contain a PSF1 Font name `kernelfont.psf`.
+The `openbit/assets` directory must contain a PSF1 Font named `kernelfont.psf`.
 The `openbit/bin` directory must contain the kernel executable, named `kernel.elf`
 
 #### Making a SalernOS-OpenBit-Kernel Compatible Kernel
