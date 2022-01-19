@@ -44,7 +44,7 @@ limitations under the License.
 
     void bootloader_memset(void* __buff, uint64 __buffsize, uint8 __val) {
         for (uint64 _i = 0; _i < __buffsize; _i++)
-            *(unsigned char*)(__buff + _i) = __val;
+            *(unsigned char*)((uint64)__buff + _i) = __val;
     }
 
 #endif
