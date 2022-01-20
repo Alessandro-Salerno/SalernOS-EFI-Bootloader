@@ -49,9 +49,11 @@ limitations under the License.
         // Opens the file and stores the status
         EFI_STATUS _status = __directory->Open(__directory, &_loaded_file, __path, EFI_FILE_MODE_READ, EFI_FILE_READ_ONLY);
         
-        // If the operation failed, NULL (void ptr) is returned
-        if (_status != EFI_SUCCESS)
+        // If the operation failed, NULL (nullptr) is returned
+        if (_status != EFI_SUCCESS) {
+            Print(L"ERROR: Couldn't find file.\n\r");
             return NULL;
+        }
 
         // Otherwise, the pointer is returned
         return _loaded_file;
@@ -59,11 +61,15 @@ limitations under the License.
 
     // Loads an ELF binary executable
     ElfFile bootloader_loadelf(EFI_FILE* __file, EFI_SYSTEM_TABLE* __systable) {
+        ElfFile _elf_info = (ElfFile) {
+            ._Valid = 0
+        };
+        
         // Tries to get a pointer to the ELF file
         // If it fails, it returns an invalid ElfFIle struct
         if (__file == NULL) {
             Print(L"ERROR: Unable to locate ELF file\n\r");
-            goto LOAD_FAILED;
+            return _elf_info;
         }
 
         // If the binary is located
@@ -93,9 +99,9 @@ limitations under the License.
         {
             // If it isn't, it throws an error and jumps to the end
             Print(L"ERROR: Invalid ELF header\n\r");
-            goto LOAD_FAILED;
+            return _elf_info;
         }
-
+ 
         // If it is, it continues
         Print(L"SUCCESS: ELF header verified!\n\r");
 
@@ -105,14 +111,15 @@ limitations under the License.
             __systable->BootServices->AllocatePool(EfiLoaderData, _elf_size, (void**)(&_elf_program_headers));
             __file->Read(__file, &_elf_size, _elf_program_headers);
         
-        for (Elf64_Phdr* _elf_program_header = _elf_program_headers;
+        for (
+            Elf64_Phdr* _elf_program_header = _elf_program_headers;
             (char*)(_elf_program_header) < (char*)(_elf_program_headers) + _elf_size;
             _elf_program_header = (Elf64_Phdr*)((char*)(_elf_program_header) + _elf_header.e_phentsize)
         )
         {
             if (_elf_program_header->p_type == PT_LOAD) {
-                int _pages      = (_elf_program_header->p_memsz + 0x1000 - 1) / 0x1000;
-                Elf64_Addr _seg = _elf_program_header->p_paddr;
+                int        _pages = (_elf_program_header->p_memsz + 0x1000 - 1) / 0x1000;
+                Elf64_Addr _seg   = _elf_program_header->p_paddr;
                 __systable->BootServices->AllocatePages(AllocateAddress, EfiLoaderData, _pages, &_seg);
 
                 __file->SetPosition(__file, _elf_program_header->p_offset);
@@ -121,16 +128,13 @@ limitations under the License.
             }
         }
 
-        return (ElfFile) {
+        _elf_info = (ElfFile) {
             ._Header        = _elf_header,
             ._PrgramHeaders = _elf_program_headers,
             ._Valid         = 1
         };
 
-        LOAD_FAILED:
-        return (ElfFile) {
-            ._Valid         = 0
-        };
+        return _elf_info;
     }
 
 #endif

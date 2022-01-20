@@ -24,7 +24,7 @@ limitations under the License.
 
 #define SEB_FAILURE 1
 
-#define COMPILATION_DATE_DAY 4
+#define COMPILATION_DATE_DAY 20
 #define COMPILAIION_DATE_MONTH (uint16)('A' << 8)
 
 #define SEB_MAJOR_VERSION 22
@@ -32,15 +32,15 @@ limitations under the License.
 
 
 typedef struct MemoryInfo {
-	EFI_MEMORY_DESCRIPTOR* _MemoryMap;
-	UINTN                  _MemoryMapSize;
-	UINTN                  _DescriptorSize;
+    EFI_MEMORY_DESCRIPTOR* _MemoryMap;
+    UINTN                  _MemoryMapSize;
+    UINTN                  _DescriptorSize;
 } MemoryInfo;
 
 typedef struct BootInfo {
-	Framebuffer* _Framebuffer;
-	BitmapFont*  _Font;
-	MemoryInfo   _Memory;
+    Framebuffer* _Framebuffer;
+    BitmapFont*  _Font;
+    MemoryInfo   _Memory;
 
     uint8        _SEBMajorVersion;
     uint16       _SEBMinorVersion;
@@ -48,64 +48,63 @@ typedef struct BootInfo {
 
 
 EFI_STATUS efi_main(EFI_HANDLE __imagehandle, EFI_SYSTEM_TABLE* __systable) {
-	BootInfo _bootinfo;
-	_bootinfo._SEBMajorVersion = SEB_MAJOR_VERSION;
-	_bootinfo._SEBMinorVersion = SEB_MINOR_VERSION;
+    BootInfo _bootinfo = (BootInfo) {
+        ._SEBMajorVersion = SEB_MAJOR_VERSION,
+        ._SEBMinorVersion = SEB_MINOR_VERSION
+    };
 
-	InitializeLib(__imagehandle, __systable);
-	Print(L"Entering SalernOS EFI Bootloader (SEB)...\n\r\n\r");
-	
-	// Locate and use Graphics Output Protocol (UEFI GOP)
-	Print(L"INFO: About to load Graphics Output Protocol...\n\r");
-	if ((_bootinfo._Framebuffer = bootloader_initialize_graphics()) == NULL)
-		goto BOOT_FAILED;
-	
-	Print(L"INFO: About to load system kernel (openbit/bin/kernel.elf)\n\r");
+    InitializeLib(__imagehandle, __systable);
+    Print(L"Entering SalernOS EFI Bootloader (SEB)...\n\r\n\r");
 
-	// Open openbit/bin directory
-	EFI_FILE* _openbit_bin = bootloader_loadfile(bootloader_loadfile(NULL, L"openbit", __imagehandle, __systable), L"bin", __imagehandle, __systable);
-	if (_openbit_bin == NULL) {
-		Print(L"ERROR: System is not OpenBit Compatible!\n\r");
-		goto BOOT_FAILED;
-	}
+    // Locate and use Graphics Output Protocol (UEFI GOP)
+    Print(L"INFO: About to load Graphics Output Protocol...\n\r");
+    if ((_bootinfo._Framebuffer = bootloader_initialize_graphics()) == NULL)
+        return SEB_FAILURE;
 
-	EFI_FILE* _kernel_file = bootloader_loadfile(_openbit_bin, L"kernel.elf", __imagehandle, __systable);
-	ElfFile _kernel = bootloader_loadelf(_kernel_file, __systable);
+    Print(L"INFO: About to load system kernel (openbit/bin/kernel.elf)\n\r");
 
-	if (_kernel._Valid == 0)
-		goto BOOT_FAILED;
+    // Open openbit/bin directory
+    EFI_FILE* _openbit_bin = bootloader_loadfile(bootloader_loadfile(NULL, L"openbit", __imagehandle, __systable), L"bin", __imagehandle, __systable);
+    if (_openbit_bin == NULL) {
+        Print(L"ERROR: System is not OpenBit Compatible!\n\r");
+        return SEB_FAILURE;
+    }
 
-	Print(L"SUCCESS: Kernel loaded!\n\r");
+    EFI_FILE* _kernel_file = bootloader_loadfile(_openbit_bin, L"kernel.elf", __imagehandle, __systable);
+    ElfFile   _kernel      = bootloader_loadelf(_kernel_file, __systable);
 
-	if ((_bootinfo._Font = bootloader_loadfont(bootloader_loadfile(bootloader_loadfile(NULL, L"openbit", __imagehandle, __systable), L"assets", __imagehandle, __systable), L"kernelfont.psf", __imagehandle, __systable)) == NULL)
-		goto BOOT_FAILED;
+    if (!_kernel._Valid)
+        return SEB_FAILURE;
 
-	// Create Memory Map
-	EFI_MEMORY_DESCRIPTOR* _mem_map = NULL;
-		UINTN _mem_map_size, _mem_map_key;
-		UINTN _mem_descriptor_size;
-		UINT32 _mem_descriptor_version;
-		__systable->BootServices->GetMemoryMap(&_mem_map_size, _mem_map, &_mem_map_key, &_mem_descriptor_size, &_mem_descriptor_version);
-		__systable->BootServices->AllocatePool(EfiLoaderData, _mem_map_size, (void**)(&_mem_map));
-		__systable->BootServices->GetMemoryMap(&_mem_map_size, _mem_map, &_mem_map_key, &_mem_descriptor_size, &_mem_descriptor_version);
+    Print(L"SUCCESS: Kernel loaded!\n\r");
 
-		// Send Memory Map to the kernel
-		_bootinfo._Memory = (MemoryInfo) {
-			._MemoryMap      = _mem_map,
-			._MemoryMapSize  = _mem_map_size,
-			._DescriptorSize = _mem_descriptor_size
-		};
+    if ((_bootinfo._Font = bootloader_loadfont(bootloader_loadfile(bootloader_loadfile(NULL, L"openbit", __imagehandle, __systable), L"assets", __imagehandle, __systable), L"kernelfont.psf", __imagehandle, __systable)) == NULL)
+        return SEB_FAILURE;
 
-	Print(L"INFO: Jumping to kernel entry...\n\r");
-	void (*_kernel_entry)(BootInfo) = ((__attribute__((sysv_abi)) void (*)(BootInfo))(_kernel._Header.e_entry));
-	
-	// Exit EFI Boot Services and jump to the kernel
-	__systable->BootServices->ExitBootServices(__imagehandle, _mem_map_key);
-	_kernel_entry(_bootinfo);
-	
-	return EFI_SUCCESS;
+    // Create Memory Map
+    EFI_MEMORY_DESCRIPTOR* _mem_map = NULL;
+        UINT32 _mem_descriptor_version;
+        UINTN  _mem_map_size,
+               _mem_map_key,
+               _mem_descriptor_size;
+        
+        __systable->BootServices->GetMemoryMap(&_mem_map_size, _mem_map, &_mem_map_key, &_mem_descriptor_size, &_mem_descriptor_version);
+        __systable->BootServices->AllocatePool(EfiLoaderData, _mem_map_size, (void**)(&_mem_map));
+        __systable->BootServices->GetMemoryMap(&_mem_map_size, _mem_map, &_mem_map_key, &_mem_descriptor_size, &_mem_descriptor_version);
 
-	BOOT_FAILED:
-	Print(L"FATAL ERROR: Boot failed. Exiting SalernOS EFI Bootloader...\n\r");
-	return SEB_FAILURE;
+        // Send Memory Map to the kernel
+        _bootinfo._Memory = (MemoryInfo) {
+            ._MemoryMap      = _mem_map,
+            ._MemoryMapSize  = _mem_map_size,
+            ._DescriptorSize = _mem_descriptor_size
+        };
+
+    Print(L"INFO: Jumping to kernel entry...\n\r");
+    void (*_kernel_entry)(BootInfo) = ((__attribute__((sysv_abi)) void (*)(BootInfo))(_kernel._Header.e_entry));
+
+    // Exit EFI Boot Services and jump to the kernel
+    __systable->BootServices->ExitBootServices(__imagehandle, _mem_map_key);
+    _kernel_entry(_bootinfo);
+
+    return EFI_SUCCESS;
 }
