@@ -50,10 +50,7 @@ limitations under the License.
         EFI_STATUS _status = __directory->Open(__directory, &_loaded_file, __path, EFI_FILE_MODE_READ, EFI_FILE_READ_ONLY);
         
         // If the operation failed, NULL (nullptr) is returned
-        if (_status != EFI_SUCCESS) {
-            Print(L"ERROR: Couldn't find file.\n\r");
-            return NULL;
-        }
+        bootloader_hardassert(_status == EFI_SUCCESS, L"ERROR: Couldn't find file.\n\r");
 
         // Otherwise, the pointer is returned
         return _loaded_file;
@@ -61,16 +58,9 @@ limitations under the License.
 
     // Loads an ELF binary executable
     ElfFile bootloader_loadelf(EFI_FILE* __file, EFI_SYSTEM_TABLE* __systable) {
-        ElfFile _elf_info = (ElfFile) {
-            ._Valid = 0
-        };
-        
         // Tries to get a pointer to the ELF file
         // If it fails, it returns an invalid ElfFIle struct
-        if (__file == NULL) {
-            Print(L"ERROR: Unable to locate ELF file\n\r");
-            return _elf_info;
-        }
+        bootloader_hardassert(__file != NULL, L"ERROR: Unable to locate ELF file\n\r");
 
         // If the binary is located
         // It goes on to read its ELF header
@@ -89,18 +79,16 @@ limitations under the License.
             __file->Read(__file, &_elf_header_size, &_elf_header);
 
         // Checks if the ELF file is a valid executable
-        if (bootloader_memcmp(&_elf_header.e_ident[EI_MAG0], ELFMAG, SELFMAG) != 0            ||
-            _elf_header.e_ident[EI_CLASS]                                     != ELFCLASS64   ||
-            _elf_header.e_ident[EI_DATA]                                      != ELFDATA2LSB  ||
-            _elf_header.e_type                                                != ET_EXEC      ||
-            _elf_header.e_machine                                             != EM_X86_64    ||
-            _elf_header.e_version                                             != EV_CURRENT
-        )
-        {
-            // If it isn't, it throws an error and jumps to the end
-            Print(L"ERROR: Invalid ELF header\n\r");
-            return _elf_info;
-        }
+        bootloader_hardassert(
+            bootloader_memcmp(&_elf_header.e_ident[EI_MAG0], ELFMAG, SELFMAG) == 0            &&
+            _elf_header.e_ident[EI_CLASS]                                     == ELFCLASS64   &&
+            _elf_header.e_ident[EI_DATA]                                      == ELFDATA2LSB  &&
+            _elf_header.e_type                                                == ET_EXEC      &&
+            _elf_header.e_machine                                             == EM_X86_64    &&
+            _elf_header.e_version                                             == EV_CURRENT,
+
+            L"ERROR: Invalid ELF header\n\r"
+        );
  
         // If it is, it continues
         Print(L"SUCCESS: ELF header verified!\n\r");
@@ -128,13 +116,10 @@ limitations under the License.
             }
         }
 
-        _elf_info = (ElfFile) {
+        return (ElfFile) {
             ._Header        = _elf_header,
             ._PrgramHeaders = _elf_program_headers,
-            ._Valid         = 1
-        };
-
-        return _elf_info;
+        };;
     }
 
 #endif

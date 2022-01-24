@@ -39,10 +39,7 @@ limitations under the License.
         EFI_GRAPHICS_OUTPUT_PROTOCOL* _graphics_output_protocol;
         EFI_STATUS _status = uefi_call_wrapper(BS->LocateProtocol, 3, &_gop_guid, NULL, (void**)(&_graphics_output_protocol));
 
-        if (EFI_ERROR(_status)) {
-            Print(L"ERROR: Unable to locate Graphics Output Protocol.\n\r");
-            return NULL;
-        }
+        bootloader_hardassert(_status == EFI_SUCCESS, L"ERROR: Unable to locate Graphics Output Protocol.\n\r");
 
         Print(L"SUCCESS: Graphics Output Protocol located!\n\r");
 

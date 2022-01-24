@@ -35,7 +35,7 @@ limitations under the License.
         const unsigned char *_a = __aptr, *_b = __bptr;
 
         for (size_t i = 0; i < __size; i++) {
-            if (_a[i] < _b[i]) return -1;
+            if      (_a[i] < _b[i]) return -1;
             else if (_a[i] > _b[i]) return 1;
         }
 

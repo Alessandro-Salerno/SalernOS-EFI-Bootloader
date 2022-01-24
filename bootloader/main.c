@@ -24,7 +24,7 @@ limitations under the License.
 
 #define SEB_FAILURE 1
 
-#define COMPILATION_DATE_DAY 20
+#define COMPILATION_DATE_DAY 24
 #define COMPILAIION_DATE_MONTH (uint16)('A' << 8)
 
 #define SEB_MAJOR_VERSION 22
@@ -58,28 +58,18 @@ EFI_STATUS efi_main(EFI_HANDLE __imagehandle, EFI_SYSTEM_TABLE* __systable) {
 
     // Locate and use Graphics Output Protocol (UEFI GOP)
     Print(L"INFO: About to load Graphics Output Protocol...\n\r");
-    if ((_bootinfo._Framebuffer = bootloader_initialize_graphics()) == NULL)
-        return SEB_FAILURE;
-
+    _bootinfo._Framebuffer = bootloader_initialize_graphics();
     Print(L"INFO: About to load system kernel (openbit/bin/kernel.elf)\n\r");
 
     // Open openbit/bin directory
     EFI_FILE* _openbit_bin = bootloader_loadfile(bootloader_loadfile(NULL, L"openbit", __imagehandle, __systable), L"bin", __imagehandle, __systable);
-    if (_openbit_bin == NULL) {
-        Print(L"ERROR: System is not OpenBit Compatible!\n\r");
-        return SEB_FAILURE;
-    }
 
     EFI_FILE* _kernel_file = bootloader_loadfile(_openbit_bin, L"kernel.elf", __imagehandle, __systable);
     ElfFile   _kernel      = bootloader_loadelf(_kernel_file, __systable);
 
-    if (!_kernel._Valid)
-        return SEB_FAILURE;
-
     Print(L"SUCCESS: Kernel loaded!\n\r");
 
-    if ((_bootinfo._Font = bootloader_loadfont(bootloader_loadfile(bootloader_loadfile(NULL, L"openbit", __imagehandle, __systable), L"assets", __imagehandle, __systable), L"kernelfont.psf", __imagehandle, __systable)) == NULL)
-        return SEB_FAILURE;
+    _bootinfo._Font = bootloader_loadfont(bootloader_loadfile(bootloader_loadfile(NULL, L"openbit", __imagehandle, __systable), L"assets", __imagehandle, __systable), L"kernelfont.psf", __imagehandle, __systable);
 
     // Create Memory Map
     EFI_MEMORY_DESCRIPTOR* _mem_map = NULL;

@@ -43,20 +43,17 @@ limitations under the License.
         Print(L"INFO: About to load bitmap font...\n\r");
 
         EFI_FILE* _font = bootloader_loadfile(__directory, __path, __imagehandle, __systable);
-        if (_font == NULL) {
-            Print(L"ERROR: Font file not found\n\r");
-            return NULL;
-        }
+        bootloader_hardassert(_font != NULL, L"ERROR: Font file not found\n\r");
 
         BitmapFontHeader* _font_header;
         UINTN _font_header_size = sizeof(BitmapFontHeader);
         __systable->BootServices->AllocatePool(EfiLoaderData, sizeof(BitmapFontHeader), (void**)(&_font_header));
         _font->Read(_font, &_font_header_size, _font_header);
 
-        if (_font_header->_Magic[0] != BITMAP_FONT_MAGIC0 || _font_header->_Magic[1] != BITMAP_FONT_MAGIC1) {
-            Print(L"ERROR: The specified file is not a PSF1 font!\n\n");
-            return NULL;
-        }
+        bootloader_hardassert(
+            _font_header->_Magic[0] == BITMAP_FONT_MAGIC0 && _font_header->_Magic[1] == BITMAP_FONT_MAGIC1,
+            L"ERROR: The specified file is not a PSF1 font!\n\n"
+        );
 
         UINTN _buffer_size = _font_header->_CharSize * ((_font_header->_Mode == 1) ? 512 : 256); 
         void* _buffer;

@@ -1,0 +1,10 @@
+"filename", "language", "C", "Makefile", "C++", "comment", "blank", "total"
+"/media/alessandro/16A0E800A0E7E3E9/SalernOS/gnu-efi/bootloader/Makefile", "Makefile", 0, 37, 0, 35, 22, 94
+"/media/alessandro/16A0E800A0E7E3E9/SalernOS/gnu-efi/bootloader/bootfile.h", "C++", 0, 0, 68, 32, 26, 126
+"/media/alessandro/16A0E800A0E7E3E9/SalernOS/gnu-efi/bootloader/bootfont.h", "C++", 0, 0, 43, 16, 18, 77
+"/media/alessandro/16A0E800A0E7E3E9/SalernOS/gnu-efi/bootloader/bootgraphics.h", "C++", 0, 0, 32, 16, 14, 62
+"/media/alessandro/16A0E800A0E7E3E9/SalernOS/gnu-efi/bootloader/bootimports.h", "C++", 0, 0, 20, 16, 10, 46
+"/media/alessandro/16A0E800A0E7E3E9/SalernOS/gnu-efi/bootloader/bootmem.h", "C++", 0, 0, 16, 26, 9, 51
+"/media/alessandro/16A0E800A0E7E3E9/SalernOS/gnu-efi/bootloader/boottypes.h", "C++", 0, 0, 12, 16, 6, 34
+"/media/alessandro/16A0E800A0E7E3E9/SalernOS/gnu-efi/bootloader/main.c", "C", 56, 0, 0, 21, 24, 101
+"Total", "-", 56, 37, 191, 178, 129, 591

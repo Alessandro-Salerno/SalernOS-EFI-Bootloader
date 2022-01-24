@@ -22,11 +22,24 @@ limitations under the License.
     #include <efi.h>
     #include <efilib.h>
     #include "boottypes.h"
-    
+
     #ifdef _WIN32
         #include "../lib/elf.h"
     #else
         #include <elf.h>
     #endif
+
+
+    void bootloader_hardassert(uint8_t __cond, CHAR16* __msg) {
+        if (__cond) return;
+
+        Print(__msg);
+        while (1);
+    }
+
+    void bootloader_softassert(uint8_t __cond, CHAR16* __msg) {
+        if (__cond) return;
+        Print(__msg);
+    }
 
 #endif
