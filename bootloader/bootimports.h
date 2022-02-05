@@ -29,9 +29,12 @@ limitations under the License.
         #include <elf.h>
     #endif
 
+    #define RETVOID
+    #define RETIF(__cond, __ret) if (__cond) return __ret
+
 
     void bootloader_hardassert(uint8_t __cond, CHAR16* __msg) {
-        if (__cond) return;
+        RETIF(__cond, RETVOID);
 
         Print(__msg);
         while (1);
