@@ -72,6 +72,7 @@ limitations under the License.
             // Gets the size of the header and allocatres enough memory to hold it
             __file->GetInfo(__file, &gEfiFileInfoGuid, &_file_info_size, NULL);
             __systable->BootServices->AllocatePool(EfiLoaderData, _file_info_size, (void**)(&_file_info));
+            bootloader_memset(_file_info, _file_info_size, 0);
 
             // Gets the header, reads it and saves it into memory
             __file->GetInfo(__file, &gEfiFileInfoGuid, &_file_info_size, (void**)(&_file_info));
@@ -97,6 +98,7 @@ limitations under the License.
             __file->SetPosition(__file, _elf_header.e_phoff);
             UINTN _elf_size = _elf_header.e_phnum * _elf_header.e_phentsize;
             __systable->BootServices->AllocatePool(EfiLoaderData, _elf_size, (void**)(&_elf_program_headers));
+            bootloader_memset(_elf_program_headers, _elf_size, 0);
             __file->Read(__file, &_elf_size, _elf_program_headers);
         
         for (
@@ -109,6 +111,7 @@ limitations under the License.
                 int        _pages = (_elf_program_header->p_memsz + 0x1000 - 1) / 0x1000;
                 Elf64_Addr _seg   = _elf_program_header->p_paddr;
                 __systable->BootServices->AllocatePages(AllocateAddress, EfiLoaderData, _pages, &_seg);
+                bootloader_memset((void*)(_seg), _pages * 4096, 0);
 
                 __file->SetPosition(__file, _elf_program_header->p_offset);
                 UINTN _size = _elf_program_header->p_filesz;
