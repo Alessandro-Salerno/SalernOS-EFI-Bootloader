@@ -1,5 +1,5 @@
 ## SalernOS
-SalernOS is a small proprietary Toy OS I'm working on.
+SalernOS is a small Toy OS I'm working on.
 
 ## SalernOS EFI Bootloader (SEB)
 The SalernOS EFI Bootloader is a free and open source GNU-EFI bootloader built on top of https://github.com/Absurdponcho/gnu-efi
