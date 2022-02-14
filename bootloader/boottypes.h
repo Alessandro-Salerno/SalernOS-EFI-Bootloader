@@ -18,15 +18,8 @@ limitations under the License.
 
 #ifndef SALERNOS_TYPES_HEADER
 #define SALERNOS_TYPES_HEADER
-
-    typedef unsigned char uint8;
-    typedef char int8;
-    typedef unsigned short uint16;
-    typedef short int16;
-    typedef unsigned int uint32;
-    typedef int int32;
-    typedef unsigned long uint64;
-    typedef long int64;
+    
+    #include <stdint.h>
 
     typedef unsigned long long size_t;
 

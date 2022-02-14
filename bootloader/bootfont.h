@@ -28,9 +28,9 @@ limitations under the License.
 
 
     typedef struct BitmapFontHeader {
-        uint8 _Magic[2];
-        uint8 _Mode;
-        uint8 _CharSize;
+        uint8_t _Magic[2];
+        uint8_t _Mode;
+        uint8_t _CharSize;
     } BitmapFontHeader;
 
     typedef struct BitmapFont {
@@ -68,7 +68,7 @@ limitations under the License.
 
         Print(L"SUCCESS: PSF1 font loaded!\n\r");
         Print(L"Font mode: %d\n\rFont char height: %d pixels\n\rFont base address: 0x%x\n\r",
-                _final_font->_Header->_Mode, _final_font->_Header->_CharSize, (uint64)(_final_font->_Buffer));
+                _final_font->_Header->_Mode, _final_font->_Header->_CharSize, (uint64_t)(_final_font->_Buffer));
 
         return _final_font;
     }

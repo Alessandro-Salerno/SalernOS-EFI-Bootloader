@@ -24,11 +24,11 @@ limitations under the License.
 
 #define SEB_FAILURE 1
 
-#define COMPILATION_DATE_DAY 12
-#define COMPILAIION_DATE_MONTH (uint16)('B' << 8)
+#define COMPILATION_DATE_DAY 14
+#define COMPILAIION_DATE_MONTH (uint16_t)('B' << 8)
 
 #define SEB_MAJOR_VERSION 22
-#define SEB_MINOR_VERSION (uint16)(COMPILAIION_DATE_MONTH | COMPILATION_DATE_DAY)
+#define SEB_MINOR_VERSION (uint16_t)(COMPILAIION_DATE_MONTH | COMPILATION_DATE_DAY)
 
 
 typedef struct MemoryInfo {
@@ -42,8 +42,8 @@ typedef struct BootInfo {
     BitmapFont*  _Font;
     MemoryInfo   _Memory;
 
-    uint8        _SEBMajorVersion;
-    uint16       _SEBMinorVersion;
+    uint8_t        _SEBMajorVersion;
+    uint16_t       _SEBMinorVersion;
 } BootInfo;
 
 
@@ -73,21 +73,21 @@ EFI_STATUS efi_main(EFI_HANDLE __imagehandle, EFI_SYSTEM_TABLE* __systable) {
 
     // Create Memory Map
     EFI_MEMORY_DESCRIPTOR* _mem_map = NULL;
-        UINT32 _mem_descriptor_version;
-        UINTN  _mem_map_size,
-               _mem_map_key,
-               _mem_descriptor_size;
-        
-        __systable->BootServices->GetMemoryMap(&_mem_map_size, _mem_map, &_mem_map_key, &_mem_descriptor_size, &_mem_descriptor_version);
-        __systable->BootServices->AllocatePool(EfiLoaderData, _mem_map_size, (void**)(&_mem_map));
-        __systable->BootServices->GetMemoryMap(&_mem_map_size, _mem_map, &_mem_map_key, &_mem_descriptor_size, &_mem_descriptor_version);
+    uint32_t _mem_descriptor_version;
+    UINTN  _mem_map_size,
+            _mem_map_key,
+            _mem_descriptor_size;
+    
+    __systable->BootServices->GetMemoryMap(&_mem_map_size, _mem_map, &_mem_map_key, &_mem_descriptor_size, &_mem_descriptor_version);
+    __systable->BootServices->AllocatePool(EfiLoaderData, _mem_map_size, (void**)(&_mem_map));
+    __systable->BootServices->GetMemoryMap(&_mem_map_size, _mem_map, &_mem_map_key, &_mem_descriptor_size, &_mem_descriptor_version);
 
-        // Send Memory Map to the kernel
-        _bootinfo._Memory = (MemoryInfo) {
-            ._MemoryMap      = _mem_map,
-            ._MemoryMapSize  = _mem_map_size,
-            ._DescriptorSize = _mem_descriptor_size
-        };
+    // Send Memory Map to the kernel
+    _bootinfo._Memory = (MemoryInfo) {
+        ._MemoryMap      = _mem_map,
+        ._MemoryMapSize  = _mem_map_size,
+        ._DescriptorSize = _mem_descriptor_size
+    };
 
     Print(L"INFO: Jumping to kernel entry...\n\r");
     void (*_kernel_entry)(BootInfo) = ((__attribute__((sysv_abi)) void (*)(BootInfo))(_kernel._Header.e_entry));

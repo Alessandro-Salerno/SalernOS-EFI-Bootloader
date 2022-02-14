@@ -66,18 +66,18 @@ limitations under the License.
         // It goes on to read its ELF header
         Print(L"INFO: Reading ELF header...\n\r");
         Elf64_Ehdr _elf_header;
-            UINTN _file_info_size;
-            EFI_FILE_INFO* _file_info;
+        UINTN _file_info_size;
+        EFI_FILE_INFO* _file_info;
 
-            // Gets the size of the header and allocatres enough memory to hold it
-            __file->GetInfo(__file, &gEfiFileInfoGuid, &_file_info_size, NULL);
-            __systable->BootServices->AllocatePool(EfiLoaderData, _file_info_size, (void**)(&_file_info));
-            bootloader_memset(_file_info, _file_info_size, 0);
+        // Gets the size of the header and allocatres enough memory to hold it
+        __file->GetInfo(__file, &gEfiFileInfoGuid, &_file_info_size, NULL);
+        __systable->BootServices->AllocatePool(EfiLoaderData, _file_info_size, (void**)(&_file_info));
+        bootloader_memset(_file_info, _file_info_size, 0);
 
-            // Gets the header, reads it and saves it into memory
-            __file->GetInfo(__file, &gEfiFileInfoGuid, &_file_info_size, (void**)(&_file_info));
-            UINTN _elf_header_size = sizeof(_elf_header);
-            __file->Read(__file, &_elf_header_size, &_elf_header);
+        // Gets the header, reads it and saves it into memory
+        __file->GetInfo(__file, &gEfiFileInfoGuid, &_file_info_size, (void**)(&_file_info));
+        UINTN _elf_header_size = sizeof(_elf_header);
+        __file->Read(__file, &_elf_header_size, &_elf_header);
 
         // Checks if the ELF file is a valid executable
         bootloader_hardassert(
@@ -95,12 +95,12 @@ limitations under the License.
         Print(L"SUCCESS: ELF header verified!\n\r");
 
         Elf64_Phdr* _elf_program_headers;
-            __file->SetPosition(__file, _elf_header.e_phoff);
-            UINTN _elf_size = _elf_header.e_phnum * _elf_header.e_phentsize;
-            __systable->BootServices->AllocatePool(EfiLoaderData, _elf_size, (void**)(&_elf_program_headers));
-            bootloader_memset(_elf_program_headers, _elf_size, 0);
-            __file->Read(__file, &_elf_size, _elf_program_headers);
-        
+        __file->SetPosition(__file, _elf_header.e_phoff);
+        UINTN _elf_size = _elf_header.e_phnum * _elf_header.e_phentsize;
+        __systable->BootServices->AllocatePool(EfiLoaderData, _elf_size, (void**)(&_elf_program_headers));
+        bootloader_memset(_elf_program_headers, _elf_size, 0);
+        __file->Read(__file, &_elf_size, _elf_program_headers);
+    
         for (
             Elf64_Phdr* _elf_program_header = _elf_program_headers;
             (char*)(_elf_program_header) < (char*)(_elf_program_headers) + _elf_size;
