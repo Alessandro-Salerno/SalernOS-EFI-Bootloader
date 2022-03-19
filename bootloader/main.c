@@ -25,8 +25,8 @@ limitations under the License.
 
 #define SEB_FAILURE 1
 
-#define COMPILATION_DATE_DAY 14
-#define COMPILAIION_DATE_MONTH (uint16_t)('B' << 8)
+#define COMPILATION_DATE_DAY 19
+#define COMPILAIION_DATE_MONTH (uint16_t)('C' << 8)
 
 #define SEB_MAJOR_VERSION 22
 #define SEB_MINOR_VERSION (uint16_t)(COMPILAIION_DATE_MONTH | COMPILATION_DATE_DAY)
