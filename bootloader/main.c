@@ -21,6 +21,7 @@ limitations under the License.
 #include "bootmem.h"
 #include "bootgraphics.h"
 #include "bootfont.h"
+#include "bootrsdp.h"
 
 #define SEB_FAILURE 1
 
@@ -41,6 +42,7 @@ typedef struct BootInfo {
     Framebuffer* _Framebuffer;
     BitmapFont*  _Font;
     MemoryInfo   _Memory;
+    void*        _RSDP;
 
     uint8_t      _SEBMajorVersion;
     uint16_t     _SEBMinorVersion;
@@ -88,6 +90,8 @@ EFI_STATUS efi_main(EFI_HANDLE __imagehandle, EFI_SYSTEM_TABLE* __systable) {
         ._MemoryMapSize  = _mem_map_size,
         ._DescriptorSize = _mem_descriptor_size
     };
+
+    _bootinfo._RSDP = bootloader_rsdp(__systable);
 
     Print(L"INFO: Jumping to kernel entry...\n\r");
     void (*_kernel_entry)(BootInfo) = ((__attribute__((sysv_abi)) void (*)(BootInfo))(_kernel._Header.e_entry));

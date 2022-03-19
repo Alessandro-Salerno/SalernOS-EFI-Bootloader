@@ -47,4 +47,12 @@ limitations under the License.
             *(unsigned char*)((uint64_t)__buff + _i) = __val;
     }
 
+    UINTN bootloader_strcmp(CHAR8* __a, CHAR8* __b, UINTN __len) {
+        for (UINTN _i = 0; _i < __len; _i++) {
+            if (*__a++ != *__b++) return FALSE;
+        }
+
+        return TRUE;
+    }
+
 #endif
