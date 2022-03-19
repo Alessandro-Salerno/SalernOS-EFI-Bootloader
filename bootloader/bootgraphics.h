@@ -25,10 +25,10 @@ limitations under the License.
     typedef struct Framebuffer {
         void*    _BaseAddress;
         size_t   _BufferSize;
-        uint32_t   _Width;
-        uint32_t   _Height;
-        uint32_t   _PixelsPerScanLine;
-        uint8_t    _BytesPerPixel;
+        uint32_t _Width;
+        uint32_t _Height;
+        uint32_t _PixelsPerScanLine;
+        uint8_t  _BytesPerPixel;
     } Framebuffer;
 
     Framebuffer framebuffer;

@@ -42,8 +42,8 @@ typedef struct BootInfo {
     BitmapFont*  _Font;
     MemoryInfo   _Memory;
 
-    uint8_t        _SEBMajorVersion;
-    uint16_t       _SEBMinorVersion;
+    uint8_t      _SEBMajorVersion;
+    uint16_t     _SEBMinorVersion;
 } BootInfo;
 
 
