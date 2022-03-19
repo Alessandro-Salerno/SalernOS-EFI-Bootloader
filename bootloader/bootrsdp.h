@@ -31,7 +31,7 @@ limitations under the License.
 
         for (UINTN _idx = 0; _idx < __systable->NumberOfTableEntries; _idx++) {
             if (CompareGuid(&_config[_idx].VendorGuid, &_acpi2_table_id))
-                if (bootloader_strcmp((CHAR8*)"RSDP PTR ", (CHAR8*)(_config->VendorTable), 8))
+                if (bootloader_strcmp((CHAR8*)"RSD PTR ", (CHAR8*)(_config->VendorTable), 8))
                     _rsdp_ptr = (void*)(_config->VendorTable);
 
             _config++;
