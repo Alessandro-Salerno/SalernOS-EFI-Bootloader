@@ -34,7 +34,7 @@ limitations under the License.
     Framebuffer framebuffer;
 
 
-    Framebuffer* bootloader_initialize_graphics() {
+    Framebuffer bootloader_initialize_graphics() {
         EFI_GRAPHICS_OUTPUT_PROTOCOL* _graphics_output_protocol;
         EFI_GUID                      _gop_guid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
         EFI_STATUS                    _status   = uefi_call_wrapper(BS->LocateProtocol, 3, &_gop_guid, NULL, (void**)(&_graphics_output_protocol));
@@ -55,7 +55,7 @@ limitations under the License.
                 framebuffer._BaseAddress, framebuffer._BufferSize, framebuffer._Width,
                 framebuffer._PixelsPerScanLine, framebuffer._Height, framebuffer._BytesPerPixel);
         
-        return &framebuffer;
+        return framebuffer;
     }
 
 #endif
