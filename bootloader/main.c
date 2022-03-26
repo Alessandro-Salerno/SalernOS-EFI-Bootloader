@@ -39,20 +39,38 @@ typedef struct MemoryInfo {
 } MemoryInfo;
 
 typedef struct BootInfo {
-    Framebuffer  _Framebuffer;
-    BitmapFont   _Font;
-    MemoryInfo   _Memory;
-    void*        _RSDP;
+    // Standard Information
+    uint64_t    _Reserved;
 
-    uint8_t      _SEBMajorVersion;
-    uint16_t     _SEBMinorVersion;
+    // Bootloader Information
+    const char* _BootloaderName;
+    const char* _BootlaoderAuthor;
+    const char* _BootloaderVersion;
+    const char* _BootloaderCopyright;
+
+    // OS Information
+    Framebuffer _Framebuffer;
+    BitmapFont  _Font;
+    void*       _OSSpecific;
+    void*       _Extensions;
+
+    // Hardware
+    MemoryInfo  _Memory;
+    void*       _RSDP;
 } BootInfo;
 
 
 EFI_STATUS efi_main(EFI_HANDLE __imagehandle, EFI_SYSTEM_TABLE* __systable) {
     BootInfo _bootinfo = (BootInfo) {
-        ._SEBMajorVersion = SEB_MAJOR_VERSION,
-        ._SEBMinorVersion = SEB_MINOR_VERSION
+        ._Reserved            = 0,
+
+        ._BootloaderName      = "SalernOS EFI Bootloader",
+        ._BootlaoderAuthor    = "Alessandro Salerno",
+        ._BootloaderVersion   = "22-C26",
+        ._BootloaderCopyright = "Copyright 2021 - 2022 | Apache License 2.0",
+
+        ._OSSpecific          = NULL,   // No OS-Specific information is sent
+        ._Extensions          = NULL    // No Spec Extensions supported
     };
 
     InitializeLib(__imagehandle, __systable);

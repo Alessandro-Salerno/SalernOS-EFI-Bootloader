@@ -27,11 +27,7 @@ limitations under the License.
         size_t   _BufferSize;
         uint32_t _Width;
         uint32_t _Height;
-        uint32_t _PixelsPerScanLine;
-        uint8_t  _BytesPerPixel;
     } Framebuffer;
-
-    Framebuffer framebuffer;
 
 
     Framebuffer bootloader_initialize_graphics() {
@@ -39,16 +35,18 @@ limitations under the License.
         EFI_GUID                      _gop_guid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
         EFI_STATUS                    _status   = uefi_call_wrapper(BS->LocateProtocol, 3, &_gop_guid, NULL, (void**)(&_graphics_output_protocol));
 
+        Framebuffer _framebuffer;
+
         bootloader_hardassert(_status == EFI_SUCCESS, L"ERROR: Unable to locate Graphics Output Protocol.\n\r");
 
-        Print(L"SUCCESS: Graphics Output Protocol located!\n\r");
+        #ifdef SEB_DEBUG
+            Print(L"SUCCESS: Graphics Output Protocol located!\n\r");
+        #endif
 
-        framebuffer._BaseAddress       = (void*)(_graphics_output_protocol->Mode->FrameBufferBase);
-        framebuffer._BufferSize        = _graphics_output_protocol->Mode->FrameBufferSize;
-        framebuffer._Width             = _graphics_output_protocol->Mode->Info->HorizontalResolution;
-        framebuffer._Height            = _graphics_output_protocol->Mode->Info->VerticalResolution;
-        framebuffer._PixelsPerScanLine = _graphics_output_protocol->Mode->Info->PixelsPerScanLine;
-        framebuffer._BytesPerPixel     = 4;
+        _framebuffer._BaseAddress       = (void*)(_graphics_output_protocol->Mode->FrameBufferBase);
+        _framebuffer._BufferSize        = _graphics_output_protocol->Mode->FrameBufferSize;
+        _framebuffer._Width             = _graphics_output_protocol->Mode->Info->PixelsPerScanLine;
+        _framebuffer._Height            = _graphics_output_protocol->Mode->Info->VerticalResolution;
 
         #ifdef SEB_DEBUG
             Print(L"SUCCESS: Framebuffer set up!\n\r");
@@ -57,7 +55,7 @@ limitations under the License.
                     framebuffer._PixelsPerScanLine, framebuffer._Height, framebuffer._BytesPerPixel);
         #endif
 
-        return framebuffer;
+        return _framebuffer;
     }
 
 #endif
