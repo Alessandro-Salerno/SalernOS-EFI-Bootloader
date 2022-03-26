@@ -16,8 +16,8 @@ limitations under the License.
 ***********************************************************************/
 
 
-#ifndef SALERNOS_FONT_HEADER
-#define SALERNOS_FONT_HEADER
+#ifndef SALERNOS_font_header
+#define SALERNOS_font_header
 
     #include "bootimports.h"
     #include "bootfile.h"
@@ -34,8 +34,8 @@ limitations under the License.
     } BitmapFontHeader;
 
     typedef struct BitmapFont {
-        BitmapFontHeader* _Header;
-        void*             _Buffer;
+        BitmapFontHeader _Header;
+        void*            _Buffer;
     } BitmapFont;
 
 
@@ -45,17 +45,16 @@ limitations under the License.
         EFI_FILE* _font = bootloader_loadfile(__directory, __path, __imagehandle, __systable);
         bootloader_hardassert(_font != NULL, L"ERROR: Font file not found\n\r");
 
-        BitmapFontHeader* _font_header;
+        BitmapFontHeader _font_header;
         UINTN _font_header_size = sizeof(BitmapFontHeader);
-        __systable->BootServices->AllocatePool(EfiLoaderData, sizeof(BitmapFontHeader), (void**)(&_font_header));
-        _font->Read(_font, &_font_header_size, _font_header);
+        _font->Read(_font, &_font_header_size, &_font_header);
 
         bootloader_hardassert(
-            _font_header->_Magic[0] == BITMAP_FONT_MAGIC0 && _font_header->_Magic[1] == BITMAP_FONT_MAGIC1,
+            _font_header._Magic[0] == BITMAP_FONT_MAGIC0 && _font_header._Magic[1] == BITMAP_FONT_MAGIC1,
             L"ERROR: The specified file is not a PSF1 font!\n\n"
         );
 
-        UINTN _buffer_size = _font_header->_CharSize * ((_font_header->_Mode == 1) ? 512 : 256); 
+        UINTN _buffer_size = _font_header._CharSize * ((_font_header._Mode == 1) ? 512 : 256); 
         void* _buffer;
         _font->SetPosition(_font, _font_header_size);
         __systable->BootServices->AllocatePool(EfiLoaderData, _buffer_size, (void**)(&_buffer));
@@ -67,7 +66,7 @@ limitations under the License.
 
         Print(L"SUCCESS: PSF1 font loaded!\n\r");
         Print(L"Font mode: %d\n\rFont char height: %d pixels\n\rFont base address: 0x%x\n\r",
-                _final_font._Header->_Mode, _final_font._Header->_CharSize, (uint64_t)(_final_font._Buffer));
+                _final_font._Header._Mode, _final_font._Header._CharSize, (uint64_t)(_final_font._Buffer));
 
         return _final_font;
     }
