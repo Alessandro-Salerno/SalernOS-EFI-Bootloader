@@ -39,7 +39,7 @@ limitations under the License.
     } BitmapFont;
 
 
-    BitmapFont* bootloader_loadfont(EFI_FILE* __directory, CHAR16* __path, EFI_HANDLE __imagehandle, EFI_SYSTEM_TABLE* __systable) {
+    BitmapFont bootloader_loadfont(EFI_FILE* __directory, CHAR16* __path, EFI_HANDLE __imagehandle, EFI_SYSTEM_TABLE* __systable) {
         Print(L"INFO: About to load bitmap font...\n\r");
 
         EFI_FILE* _font = bootloader_loadfile(__directory, __path, __imagehandle, __systable);
@@ -61,14 +61,13 @@ limitations under the License.
         __systable->BootServices->AllocatePool(EfiLoaderData, _buffer_size, (void**)(&_buffer));
         _font->Read(_font, &_buffer_size, _buffer);
 
-        BitmapFont* _final_font;
-        __systable->BootServices->AllocatePool(EfiLoaderData, sizeof(BitmapFont), (void**)(&_final_font));
-        _final_font->_Header     = _font_header;
-        _final_font->_Buffer     = _buffer;
+        BitmapFont _final_font;
+        _final_font._Header     = _font_header;
+        _final_font._Buffer     = _buffer;
 
         Print(L"SUCCESS: PSF1 font loaded!\n\r");
         Print(L"Font mode: %d\n\rFont char height: %d pixels\n\rFont base address: 0x%x\n\r",
-                _final_font->_Header->_Mode, _final_font->_Header->_CharSize, (uint64_t)(_final_font->_Buffer));
+                _final_font._Header->_Mode, _final_font._Header->_CharSize, (uint64_t)(_final_font._Buffer));
 
         return _final_font;
     }

@@ -40,7 +40,7 @@ typedef struct MemoryInfo {
 
 typedef struct BootInfo {
     Framebuffer  _Framebuffer;
-    BitmapFont*  _Font;
+    BitmapFont   _Font;
     MemoryInfo   _Memory;
     void*        _RSDP;
 
