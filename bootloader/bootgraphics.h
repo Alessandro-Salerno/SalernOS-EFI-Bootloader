@@ -50,11 +50,13 @@ limitations under the License.
         framebuffer._PixelsPerScanLine = _graphics_output_protocol->Mode->Info->PixelsPerScanLine;
         framebuffer._BytesPerPixel     = 4;
 
-        Print(L"SUCCESS: Framebuffer set up!\n\r");
-        Print(L"Base Address: 0x%x\n\rSize: %d bytes\n\rWidth: %d (Real: %d) pixels\n\rHeight: %d pixels\n\rBPP: %d\n\r",
-                framebuffer._BaseAddress, framebuffer._BufferSize, framebuffer._Width,
-                framebuffer._PixelsPerScanLine, framebuffer._Height, framebuffer._BytesPerPixel);
-        
+        #ifdef SEB_DEBUG
+            Print(L"SUCCESS: Framebuffer set up!\n\r");
+            Print(L"Base Address: 0x%x\n\rSize: %d bytes\n\rWidth: %d (Real: %d) pixels\n\rHeight: %d pixels\n\rBPP: %d\n\r",
+                    framebuffer._BaseAddress, framebuffer._BufferSize, framebuffer._Width,
+                    framebuffer._PixelsPerScanLine, framebuffer._Height, framebuffer._BytesPerPixel);
+        #endif
+
         return framebuffer;
     }
 

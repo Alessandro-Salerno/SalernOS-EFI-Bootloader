@@ -64,7 +64,10 @@ limitations under the License.
 
         // If the binary is located
         // It goes on to read its ELF header
-        Print(L"INFO: Reading ELF header...\n\r");
+        #ifdef SEB_DEBUG
+            Print(L"INFO: Reading ELF header...\n\r");
+        #endif
+        
         Elf64_Ehdr _elf_header;
         UINTN _file_info_size;
         EFI_FILE_INFO* _file_info;
@@ -91,8 +94,10 @@ limitations under the License.
             L"ERROR: Invalid ELF header\n\r"
         );
  
-        // If it is, it continues
-        Print(L"SUCCESS: ELF header verified!\n\r");
+        #ifdef SEB_DEBUG
+            // If it is, it continues
+            Print(L"SUCCESS: ELF header verified!\n\r");
+        #endif
 
         Elf64_Phdr* _elf_program_headers;
         __file->SetPosition(__file, _elf_header.e_phoff);

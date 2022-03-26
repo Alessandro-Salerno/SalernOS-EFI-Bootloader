@@ -64,9 +64,11 @@ limitations under the License.
         _final_font._Header     = _font_header;
         _final_font._Buffer     = _buffer;
 
-        Print(L"SUCCESS: PSF1 font loaded!\n\r");
-        Print(L"Font mode: %d\n\rFont char height: %d pixels\n\rFont base address: 0x%x\n\r",
-                _final_font._Header._Mode, _final_font._Header._CharSize, (uint64_t)(_final_font._Buffer));
+        #ifdef SEB_DEBUG
+            Print(L"SUCCESS: PSF1 font loaded!\n\r");
+            Print(L"Font mode: %d\n\rFont char height: %d pixels\n\rFont base address: 0x%x\n\r",
+                    _final_font._Header._Mode, _final_font._Header._CharSize, (uint64_t)(_final_font._Buffer));
+        #endif
 
         return _final_font;
     }

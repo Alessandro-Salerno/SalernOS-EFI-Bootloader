@@ -56,12 +56,17 @@ EFI_STATUS efi_main(EFI_HANDLE __imagehandle, EFI_SYSTEM_TABLE* __systable) {
     };
 
     InitializeLib(__imagehandle, __systable);
-    Print(L"Entering SalernOS EFI Bootloader (SEB)...\n\r\n\r");
 
     // Locate and use Graphics Output Protocol (UEFI GOP)
-    Print(L"INFO: About to load Graphics Output Protocol...\n\r");
+    #ifdef SEB_DEBUG
+        Print(L"INFO: About to load Graphics Output Protocol...\n\r");
+    #endif
+
     _bootinfo._Framebuffer = bootloader_initialize_graphics();
-    Print(L"INFO: About to load system kernel (openbit/bin/kernel.elf)\n\r");
+    
+    #ifdef SEB_DEBUG
+        Print(L"INFO: About to load system kernel (openbit/bin/kernel.elf)\n\r");
+    #endif
 
     // Open openbit/bin directory
     EFI_FILE* _openbit_bin = bootloader_loadfile(bootloader_loadfile(NULL, L"openbit", __imagehandle, __systable), L"bin", __imagehandle, __systable);
@@ -69,7 +74,9 @@ EFI_STATUS efi_main(EFI_HANDLE __imagehandle, EFI_SYSTEM_TABLE* __systable) {
     EFI_FILE* _kernel_file = bootloader_loadfile(_openbit_bin, L"kernel.elf", __imagehandle, __systable);
     ElfFile   _kernel      = bootloader_loadelf(_kernel_file, __systable);
 
-    Print(L"SUCCESS: Kernel loaded!\n\r");
+    #ifdef SEB_DEBUG
+        Print(L"SUCCESS: Kernel loaded!\n\r");
+    #endif
 
     _bootinfo._Font = bootloader_loadfont(bootloader_loadfile(bootloader_loadfile(NULL, L"openbit", __imagehandle, __systable), L"assets", __imagehandle, __systable), L"kernelfont.psf", __imagehandle, __systable);
 
@@ -93,7 +100,10 @@ EFI_STATUS efi_main(EFI_HANDLE __imagehandle, EFI_SYSTEM_TABLE* __systable) {
 
     _bootinfo._RSDP = bootloader_rsdp(__systable);
 
-    Print(L"INFO: Jumping to kernel entry...\n\r");
+    #ifdef SEB_DEBUG
+        Print(L"INFO: Jumping to kernel entry...\n\r");
+    #endif
+
     void (*_kernel_entry)(BootInfo*) = ((__attribute__((sysv_abi)) void (*)(BootInfo*))(_kernel._Header.e_entry));
 
     // Exit EFI Boot Services and jump to the kernel
