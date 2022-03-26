@@ -94,11 +94,11 @@ EFI_STATUS efi_main(EFI_HANDLE __imagehandle, EFI_SYSTEM_TABLE* __systable) {
     _bootinfo._RSDP = bootloader_rsdp(__systable);
 
     Print(L"INFO: Jumping to kernel entry...\n\r");
-    void (*_kernel_entry)(BootInfo) = ((__attribute__((sysv_abi)) void (*)(BootInfo))(_kernel._Header.e_entry));
+    void (*_kernel_entry)(BootInfo*) = ((__attribute__((sysv_abi)) void (*)(BootInfo*))(_kernel._Header.e_entry));
 
     // Exit EFI Boot Services and jump to the kernel
     __systable->BootServices->ExitBootServices(__imagehandle, _mem_map_key);
-    _kernel_entry(_bootinfo);
+    _kernel_entry(&_bootinfo);
 
     return EFI_SUCCESS;
 }
