@@ -16,8 +16,8 @@ limitations under the License.
 ***********************************************************************/
 
 
-#ifndef SALERNOS_font_header
-#define SALERNOS_font_header
+#ifndef SALERNOS_FONT_HEADER
+#define SALERNOS_FONT_HEADER
 
     #include "bootimports.h"
     #include "bootfile.h"
