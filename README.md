@@ -26,11 +26,11 @@ NOTE: Remember to change something in `main.c` before compiling, otherwise it wo
 ## Using SEB as bootloader for an Operating System
 This is a little trickier, but you should be able to do it, otherwise, open an issue on this Github page.
 
-### The OpenBit Specification
-The OpenBit Bootloader & Kernel Specification, developed by the OpenBit Discord Server, has not been finalised yet, SEB uses a temporary version of the Specification, called SalernOS OpenBit. Please note that this WILL change soon, as the server finalises the Official Specification.
+### The Simple Boot Specification
+The SalernOS EFI Bootlaoder uses the [Simple Boot Specification](https://github.com/Alessandro-Salerno/Simple-Boot-Specification) to hand information over to the Kernel.
 
-#### Making a SalernOS-OpenBit-Bootloader Compatible File System
-Currently the SalernOS OpenBit Bootloader Specification requires the following directories
+#### Making a SEB Compatible File System
+Currently the SEB Specification requires the following directories
 * EFI
 * EFI/BOOT
 * openbit
@@ -40,7 +40,3 @@ Currently the SalernOS OpenBit Bootloader Specification requires the following d
 The `EFI/BOOT`directory must contain a `bootx64.efi` file. This file is the SEB binary, you can get it by renaming the `main.efi` file.
 The `openbit/assets` directory must contain a PSF1 Font named `kernelfont.psf`.
 The `openbit/bin` directory must contain the kernel executable, named `kernel.elf`
-
-#### Making a SalernOS-OpenBit-Kernel Compatible Kernel
-Currently, the SalernOS OpenBit Kernel Specification only requires an entry point that must take one single parameter: a `BootInfo` struct.
-You can find the definition of a `BootInfo` struct in `bootloader/main.c`.
