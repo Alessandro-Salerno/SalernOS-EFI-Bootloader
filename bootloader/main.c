@@ -22,51 +22,18 @@ limitations under the License.
 #include "bootgraphics.h"
 #include "bootfont.h"
 #include "bootrsdp.h"
+#include "sbs.h"
 
 #define SEB_FAILURE 1
 
-#define COMPILATION_DATE_DAY 25
-#define COMPILAIION_DATE_MONTH (uint16_t)('C' << 8)
-
-#define SEB_MAJOR_VERSION 22
-#define SEB_MINOR_VERSION (uint16_t)(COMPILAIION_DATE_MONTH | COMPILATION_DATE_DAY)
-
-
-typedef struct MemoryInfo {
-    EFI_MEMORY_DESCRIPTOR* _MemoryMap;
-    UINTN                  _MemoryMapSize;
-    UINTN                  _DescriptorSize;
-} MemoryInfo;
-
-typedef struct BootInfo {
-    // Standard Information
-    uint64_t    _Reserved;
-
-    // Bootloader Information
-    const char* _BootloaderName;
-    const char* _BootlaoderAuthor;
-    const char* _BootloaderVersion;
-    const char* _BootloaderCopyright;
-
-    // OS Information
-    Framebuffer _Framebuffer;
-    BitmapFont  _Font;
-    void*       _OSSpecific;
-    void*       _Extensions;
-
-    // Hardware
-    MemoryInfo  _Memory;
-    void*       _RSDP;
-} BootInfo;
-
 
 EFI_STATUS efi_main(EFI_HANDLE __imagehandle, EFI_SYSTEM_TABLE* __systable) {
-    BootInfo _bootinfo = (BootInfo) {
-        ._Reserved            = 0,
+    struct SimpleBootInformationTable _bootinfo = (struct SimpleBootInformationTable) {
+        ._Signature           = SBS_LATEST,
 
         ._BootloaderName      = "SalernOS EFI Bootloader",
         ._BootlaoderAuthor    = "Alessandro Salerno",
-        ._BootloaderVersion   = "22-C26",
+        ._BootloaderVersion   = "22-C27",
         ._BootloaderCopyright = "Copyright 2021 - 2022 | Apache License 2.0",
 
         ._OSSpecific          = NULL,   // No OS-Specific information is sent
@@ -110,19 +77,19 @@ EFI_STATUS efi_main(EFI_HANDLE __imagehandle, EFI_SYSTEM_TABLE* __systable) {
     __systable->BootServices->GetMemoryMap(&_mem_map_size, _mem_map, &_mem_map_key, &_mem_descriptor_size, &_mem_descriptor_version);
 
     // Send Memory Map to the kernel
-    _bootinfo._Memory = (MemoryInfo) {
-        ._MemoryMap      = _mem_map,
+    _bootinfo._Memory = (struct SimpleBootMemoryInformationTable) {
+        ._MemoryMap      = (struct SimpleBootMemoryDescriptor*)(_mem_map),
         ._MemoryMapSize  = _mem_map_size,
         ._DescriptorSize = _mem_descriptor_size
     };
 
-    _bootinfo._RSDP = bootloader_rsdp(__systable);
+    _bootinfo._RSDP = (struct SimpleBootRootSystemDescriptor*)(bootloader_rsdp(__systable));
 
     #ifdef SEB_DEBUG
         Print(L"INFO: Jumping to kernel entry...\n\r");
     #endif
 
-    void (*_kernel_entry)(BootInfo*) = ((__attribute__((sysv_abi)) void (*)(BootInfo*))(_kernel._Header.e_entry));
+    void (*_kernel_entry)(struct SimpleBootInformationTable*) = ((__attribute__((sysv_abi)) void (*)(struct SimpleBootInformationTable*))(_kernel._Header.e_entry));
 
     // Exit EFI Boot Services and jump to the kernel
     __systable->BootServices->ExitBootServices(__imagehandle, _mem_map_key);

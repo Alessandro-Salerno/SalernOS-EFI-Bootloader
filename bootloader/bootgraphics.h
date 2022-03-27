@@ -21,21 +21,15 @@ limitations under the License.
 
     #include "bootimports.h"
     #include "bootmem.h"
-
-    typedef struct Framebuffer {
-        void*    _BaseAddress;
-        size_t   _BufferSize;
-        uint32_t _Width;
-        uint32_t _Height;
-    } Framebuffer;
+    #include "sbs.h"
 
 
-    Framebuffer bootloader_initialize_graphics() {
+    struct SimpleBootFramebuffer bootloader_initialize_graphics() {
         EFI_GRAPHICS_OUTPUT_PROTOCOL* _graphics_output_protocol;
         EFI_GUID                      _gop_guid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
         EFI_STATUS                    _status   = uefi_call_wrapper(BS->LocateProtocol, 3, &_gop_guid, NULL, (void**)(&_graphics_output_protocol));
 
-        Framebuffer _framebuffer;
+        struct SimpleBootFramebuffer _framebuffer;
 
         bootloader_hardassert(_status == EFI_SUCCESS, L"ERROR: Unable to locate Graphics Output Protocol.\n\r");
 

@@ -22,31 +22,21 @@ limitations under the License.
     #include "bootimports.h"
     #include "bootfile.h"
     #include "bootmem.h"
+    #include "sbs.h"
 
     #define BITMAP_FONT_MAGIC0 0x36
     #define BITMAP_FONT_MAGIC1 0x04
 
 
-    typedef struct BitmapFontHeader {
-        uint8_t _Magic[2];
-        uint8_t _Mode;
-        uint8_t _CharSize;
-    } BitmapFontHeader;
 
-    typedef struct BitmapFont {
-        BitmapFontHeader _Header;
-        void*            _Buffer;
-    } BitmapFont;
-
-
-    BitmapFont bootloader_loadfont(EFI_FILE* __directory, CHAR16* __path, EFI_HANDLE __imagehandle, EFI_SYSTEM_TABLE* __systable) {
+    struct SimpleBootFont bootloader_loadfont(EFI_FILE* __directory, CHAR16* __path, EFI_HANDLE __imagehandle, EFI_SYSTEM_TABLE* __systable) {
         Print(L"INFO: About to load bitmap font...\n\r");
 
         EFI_FILE* _font = bootloader_loadfile(__directory, __path, __imagehandle, __systable);
         bootloader_hardassert(_font != NULL, L"ERROR: Font file not found\n\r");
 
-        BitmapFontHeader _font_header;
-        UINTN _font_header_size = sizeof(BitmapFontHeader);
+        struct SimpleBootFontHeader _font_header;
+        UINTN _font_header_size = sizeof(struct SimpleBootFontHeader);
         _font->Read(_font, &_font_header_size, &_font_header);
 
         bootloader_hardassert(
@@ -60,7 +50,7 @@ limitations under the License.
         __systable->BootServices->AllocatePool(EfiLoaderData, _buffer_size, (void**)(&_buffer));
         _font->Read(_font, &_buffer_size, _buffer);
 
-        BitmapFont _final_font;
+        struct SimpleBootFont _final_font;
         _final_font._Header     = _font_header;
         _final_font._Buffer     = _buffer;
 
