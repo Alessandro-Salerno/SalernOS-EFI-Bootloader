@@ -27,7 +27,7 @@ SOFTWARE.
 #define SBS_H
 
 #include <stdint.h>
-// #include <stddef.h>
+#include <stddef.h>
 
 #define SBS_VERSION_1_0 "SIMPLEBOOT 1.0.0"
 #define SBS_LATEST      SBS_VERSION_1_0
@@ -95,7 +95,7 @@ struct SimpleBootInformationTable {
 
     // Hardware
     struct SimpleBootMemoryInformationTable  _Memory;                   // SBS Memory Inforamtion struct
-    void*                                    _RSDP;                     // Root System Descriptor Pointer
+    struct SimpleBootRootSystemDescriptor*   _RSDP;                     // Root System Descriptor Pointer
 };
 
 #endif
