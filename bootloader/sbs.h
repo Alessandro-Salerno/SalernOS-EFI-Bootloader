@@ -27,7 +27,6 @@ SOFTWARE.
 #define SBS_H
 
 #include <stdint.h>
-#include <stddef.h>
 
 #define SBS_VERSION_1_0 "SIMPLEBOOT 1.0.0"
 #define SBS_LATEST      SBS_VERSION_1_0
