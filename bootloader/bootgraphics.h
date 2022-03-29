@@ -37,6 +37,24 @@ limitations under the License.
             Print(L"SUCCESS: Graphics Output Protocol located!\n\r");
         #endif
 
+        UINTN _mode = 0, _size = 0;
+        for (UINTN _i = 0; _i < _graphics_output_protocol->Mode->MaxMode; _i++) {
+            EFI_GRAPHICS_OUTPUT_MODE_INFORMATION* _info;
+            UINTN _info_sz;
+
+            bootloader_hardassert(
+                EFI_SUCCESS == uefi_call_wrapper(_graphics_output_protocol->QueryMode, 4, _graphics_output_protocol, _i, &_info_sz, &_info),
+                L"Failed to set graphics mode"
+            );
+
+            if (_info->HorizontalResolution > _size) {
+                _mode = _i;
+                _size = _info->HorizontalResolution;
+            }
+        }
+
+        uefi_call_wrapper(_graphics_output_protocol->SetMode, 2, _graphics_output_protocol, _mode);
+        
         _framebuffer._BaseAddress       = (void*)(_graphics_output_protocol->Mode->FrameBufferBase);
         _framebuffer._BufferSize        = _graphics_output_protocol->Mode->FrameBufferSize;
         _framebuffer._Width             = _graphics_output_protocol->Mode->Info->PixelsPerScanLine;
