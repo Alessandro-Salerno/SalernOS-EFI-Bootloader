@@ -30,7 +30,9 @@ limitations under the License.
 
 
     struct SimpleBootFont bootloader_loadfont(EFI_FILE* __directory, CHAR16* __path, EFI_HANDLE __imagehandle, EFI_SYSTEM_TABLE* __systable) {
-        Print(L"INFO: About to load bitmap font...\n\r");
+        #ifdef SEB_DEBUG
+            Print(L"INFO: About to load bitmap font...\n\r");
+        #endif
 
         EFI_FILE* _font = bootloader_loadfile(__directory, __path, __imagehandle, __systable);
         bootloader_hardassert(_font != NULL, L"ERROR: Font file not found\n\r");
