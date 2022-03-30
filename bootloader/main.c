@@ -33,7 +33,7 @@ EFI_STATUS efi_main(EFI_HANDLE __imagehandle, EFI_SYSTEM_TABLE* __systable) {
 
         ._BootloaderName      = "SalernOS EFI Bootloader",
         ._BootlaoderAuthor    = "Alessandro Salerno",
-        ._BootloaderVersion   = "22-C29",
+        ._BootloaderVersion   = "22-C30",
         ._BootloaderCopyright = "Copyright 2021 - 2022 | Apache License 2.0",
 
         ._OSSpecific          = NULL,   // No OS-Specific information is sent
