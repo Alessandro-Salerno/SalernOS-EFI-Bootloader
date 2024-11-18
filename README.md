@@ -1,3 +1,6 @@
+> [!WARNING]
+> This repository is for historical purposes only. It is used as a monument to the year 2022, and may be used as a "nostalgia kit" to build older SalernOS versions from that year. The SalernOS EFI Bootloader was discontinued in 2023 and is no longer in use.
+
 ## SalernOS
 SalernOS is a small Toy OS I'm working on.
 
